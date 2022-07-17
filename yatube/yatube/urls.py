@@ -9,7 +9,6 @@ handler500 = 'core.views.server_error'
 handler403 = 'core.views.permission_denied'
 
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('posts.urls', namespace='posts')),

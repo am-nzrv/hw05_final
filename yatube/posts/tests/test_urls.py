@@ -84,5 +84,3 @@ class PostURLTests(TestCase):
             with self.subTest(reversed_name=reversed_name):
                 response = PostURLTests.authorized_author.get(reversed_name)
                 self.assertTemplateUsed(response, template[1])
-
-

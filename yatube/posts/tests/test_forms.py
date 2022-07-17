@@ -93,4 +93,3 @@ class PostCreateFormTests(TestCase):
                     args=(PostCreateFormTests.post.id,)))
         self.assertEqual(Comment.objects.count(), posts_count + 1)
         self.assertContains(response, PostCreateFormTests.comment.text)
-

@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render
 
 
 def page_not_found(request, exception):
@@ -15,5 +15,3 @@ def server_error(request):
 
 def permission_denied(request, exception):
     return render(request, 'core/403.html', status=403)
-
-
