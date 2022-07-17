@@ -17,7 +17,7 @@ urlpatterns = [
     path('about/', include('about.urls', namespace='about')),
     path('check_500/', include('core.urls', namespace='core'))
 ]
- 
+
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
