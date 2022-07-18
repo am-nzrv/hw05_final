@@ -184,7 +184,7 @@ class PostViewsTest(TestCase):
             author=PostViewsTest.user_2,
             text='На меня заффоловился юзер 1'
         )
-        response = PostViewsTest.authorized_user.get(reverse(
+        PostViewsTest.authorized_user.get(reverse(
             'posts:profile_follow',
             args=(PostViewsTest.user_2,)
         ))
@@ -193,7 +193,7 @@ class PostViewsTest(TestCase):
                                author=PostViewsTest.user_2).exists())
 
     def test_user_unfollows_author(self):
-        response = PostViewsTest.authorized_user.get(reverse(
+        PostViewsTest.authorized_user.get(reverse(
             'posts:profile_unfollow',
             args=(PostViewsTest.user_2,)
         ))

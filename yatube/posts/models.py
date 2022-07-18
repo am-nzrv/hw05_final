@@ -105,6 +105,3 @@ class Follow(models.Model):
                 name='unique_follow'
             )
         ]
-
-
-
