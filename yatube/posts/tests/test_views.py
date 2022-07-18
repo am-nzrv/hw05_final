@@ -173,10 +173,10 @@ class PostViewsTest(TestCase):
             PostViewsTest.authorized_user.get(reverse('posts:index')))
         self.assertNotEqual(response_3.content, old_content)
 
-    # def test_follow_index_uses_correct_context(self):
-    #     for obj, post_obj in PostViewsTest.index_obj_list.items():
-    #         with self.subTest(obj=obj):
-    #             self.assertEqual(obj, post_obj)
+    def test_follow_index_uses_correct_context(self):
+        for obj, post_obj in PostViewsTest.index_obj_list.items():
+            with self.subTest(obj=obj):
+                self.assertEqual(obj, post_obj)
 
     def test_user_follows_author(self):
         """Проверка, что при подписка работает"""
