@@ -1,9 +1,11 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
-from ..models import Group, Post
+
+from ..models import Group, Post, Follow
 
 User = get_user_model()
 
@@ -16,6 +18,9 @@ class PostViewsTest(TestCase):
         cls.user = User.objects.create_user(username='test_user')
         cls.authorized_user = Client()
         cls.authorized_user.force_login(cls.user)
+        cls.user_2 = User.objects.create_user(username='follower_user')
+        cls.authorized_user_2 = Client()
+        cls.authorized_user_2.force_login(cls.user_2)
         cls.guest_user = Client()
         cls.group = Group.objects.create(title='test_group',
                                          slug='test_slug',
@@ -27,6 +32,8 @@ class PostViewsTest(TestCase):
                                        pub_date='10.10.2000',
                                        group=cls.group,
                                        image='')
+        cls.follow = Follow.objects.create(user=cls.user_2,
+                                           author=cls.user)
         cls.reverse_templates = {
             reverse('posts:index'): 'posts/index.html',
             reverse('posts:group_list',
@@ -39,9 +46,6 @@ class PostViewsTest(TestCase):
             reverse('posts:post_edit',
                     args=(PostViewsTest.post.id,)): 'posts/create_post.html'
         }
-        # Перенес все словари, но т.к начинало ругаться на то,
-        # что не определены переменные post_object, index_object и тд,
-        # тоже засунул их сюда, может можно и лучше, но кажется работает
         response_post = PostViewsTest.authorized_user.get(
             reverse('posts:post_detail',
                     args=(PostViewsTest.post.id,)))
@@ -72,17 +76,26 @@ class PostViewsTest(TestCase):
             group_object.text: PostViewsTest.post.text,
             group_object.image: PostViewsTest.post.image
         }
-        response = PostViewsTest.authorized_user.get(
+        response_profile = PostViewsTest.authorized_user.get(
             reverse(
                 'posts:profile',
                 args=(PostViewsTest.user.username,)))
-        profile_object = response.context['page_obj'][0]
+        profile_object = response_profile.context['page_obj'][0]
         cls.profile_obj_list = {
             profile_object.author: PostViewsTest.post.author,
             profile_object.text: PostViewsTest.post.text,
             profile_object.pub_date: PostViewsTest.post.pub_date,
             profile_object.group: PostViewsTest.post.group,
             profile_object.image: PostViewsTest.post.image
+        }
+        response_follow = PostViewsTest.authorized_user_2.get(
+            reverse('posts:follow_index'))
+        follow_object = response_follow.context['page_obj'][0]
+        cls.follow_obj_list = {
+            follow_object.text: PostViewsTest.post.text,
+            follow_object.author: PostViewsTest.post.author,
+            follow_object.pub_date: PostViewsTest.post.pub_date,
+            follow_object.image: PostViewsTest.post.image
         }
 
     def test_pages_uses_correct_templates(self):
@@ -160,11 +173,40 @@ class PostViewsTest(TestCase):
             PostViewsTest.authorized_user.get(reverse('posts:index')))
         self.assertNotEqual(response_3.content, old_content)
 
+    # def test_follow_index_uses_correct_context(self):
+    #     for obj, post_obj in PostViewsTest.index_obj_list.items():
+    #         with self.subTest(obj=obj):
+    #             self.assertEqual(obj, post_obj)
+
+    def test_user_follows_author(self):
+        """Проверка, что при подписка работает"""
+        Post.objects.create(
+            author=PostViewsTest.user_2,
+            text='На меня заффоловился юзер 1'
+        )
+        response = PostViewsTest.authorized_user.get(reverse(
+            'posts:profile_follow',
+            args=(PostViewsTest.user_2,)
+        ))
+        self.assertTrue(Follow.objects.
+                        filter(user=PostViewsTest.user,
+                               author=PostViewsTest.user_2).exists())
+
+    def test_user_unfollows_author(self):
+        response = PostViewsTest.authorized_user.get(reverse(
+            'posts:profile_unfollow',
+            args=(PostViewsTest.user_2,)
+        ))
+        self.assertFalse(Follow.objects.
+                         filter(user=PostViewsTest.user,
+                                author=PostViewsTest.user_2).exists())
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.pages = settings.POSTS_PER_PAGE
         cls.user = User.objects.create_user(username='pagination_user')
         cls.auth_user = Client()
         cls.auth_user.force_login(cls.user)
@@ -183,11 +225,11 @@ class PaginatorViewsTest(TestCase):
     def test_pagination_pagination_page_one(self):
         cache.clear()
         reversed_names_list = {
-            reverse('posts:index'): 10,
+            reverse('posts:index'): self.pages,
             reverse('posts:group_list',
-                    args=('test_slug',)): 10,
+                    args=('test_slug',)): self.pages,
             reverse('posts:profile',
-                    args=('pagination_user',)): 10
+                    args=('pagination_user',)): self.pages
         }
         for reversed_names, posts in reversed_names_list.items():
             with self.subTest(reversed_names=reversed_names):
@@ -197,11 +239,11 @@ class PaginatorViewsTest(TestCase):
     def test_pagination_page_two(self):
         cache.clear()
         reversed_names_list = {
-            reverse('posts:index'): 5,
+            reverse('posts:index'): (15 - self.pages),
             reverse('posts:group_list',
-                    args=('test_slug',)): 5,
+                    args=('test_slug',)): (15 - self.pages),
             reverse('posts:profile',
-                    args=('pagination_user',)): 5
+                    args=('pagination_user',)): (15 - self.pages)
         }
         for reversed_names, posts in reversed_names_list.items():
             with self.subTest(reversed_names=reversed_names):

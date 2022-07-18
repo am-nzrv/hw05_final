@@ -19,7 +19,8 @@ def index(request):
         settings.POSTS_PER_PAGE
     )
     context = {
-        'page_obj': page_obj
+        'page_obj': page_obj,
+        'index': True
     }
     return render(request, template, context)
 
@@ -45,10 +46,9 @@ def profile(request, username):
     """Вьюшка для страницы пользователя."""
     author = get_object_or_404(User, username=username)
     author_posts_list = author.posts.all()
-    if author.following.filter(author=author).all():
+    following = False
+    if author.following.filter(author=author).exists():
         following = True
-    else:
-        following = False
     page_obj = pagination(
         request,
         author_posts_list,
@@ -131,15 +131,16 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    # user = Follow.objects.filter(user=request.user).select_related('author')
-    # following_authors_list = User.objects.filter(following__in=user)
     post_list = Post.objects.filter(author__following__user=request.user)
     page_obj = pagination(
         request,
         post_list,
         settings.POSTS_PER_PAGE
     )
-    context = {'page_obj': page_obj}
+    context = {
+        'page_obj': page_obj,
+        'follow': True
+    }
     return render(request, 'posts/follow.html', context)
 
 
@@ -147,9 +148,8 @@ def follow_index(request):
 def profile_follow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
-    if not user == author and not Follow.objects.filter(user=user,
-                                                        author=author).all():
-        Follow.objects.create(user=user, author=author)
+    if not user == author:
+        Follow.objects.get_or_create(user=user, author=author)
     return render(request, 'posts/follow.html')
 
 
