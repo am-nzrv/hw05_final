@@ -21,6 +21,9 @@ class PostViewsTest(TestCase):
         cls.user_2 = User.objects.create_user(username='follower_user')
         cls.authorized_user_2 = Client()
         cls.authorized_user_2.force_login(cls.user_2)
+        cls.user_3 = User.objects.create_user(username='non_follower_user')
+        cls.authorized_user_3 = Client()
+        cls.authorized_user_3.force_login(cls.user_3)
         cls.guest_user = Client()
         cls.group = Group.objects.create(title='test_group',
                                          slug='test_slug',
@@ -200,6 +203,16 @@ class PostViewsTest(TestCase):
         self.assertFalse(Follow.objects.
                          filter(user=PostViewsTest.user,
                                 author=PostViewsTest.user_2).exists())
+
+    def test_followed_and_unfollowed_posts(self):
+        response = PostViewsTest.authorized_user_2.get(reverse(
+            'posts:follow_index'
+        ))
+        self.assertContains(response, PostViewsTest.post)
+        response = PostViewsTest.authorized_user_3.get(reverse(
+            'posts:follow_index'
+        ))
+        self.assertNotContains(response, PostViewsTest.post)
 
 
 class PaginatorViewsTest(TestCase):

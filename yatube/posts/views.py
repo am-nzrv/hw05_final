@@ -46,9 +46,9 @@ def profile(request, username):
     """Вьюшка для страницы пользователя."""
     author = get_object_or_404(User, username=username)
     author_posts_list = author.posts.all()
-    following = False
-    if author.following.filter(author=author).exists():
-        following = True
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(user=request.user,
+                                          author=author).exists()
     page_obj = pagination(
         request,
         author_posts_list,
@@ -150,7 +150,7 @@ def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if not user == author:
         Follow.objects.get_or_create(user=user, author=author)
-    return render(request, 'posts/follow.html')
+    return redirect('posts:follow_index')
 
 
 @login_required
@@ -158,4 +158,4 @@ def profile_unfollow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=user, author=author).delete()
-    return render(request, 'posts/follow.html')
+    return redirect('posts:follow_index')
