@@ -6,7 +6,7 @@
   <li>Дата публикации: {{ post.pub_date|date:"d E Y" }}</li>
 </ul>
 <article class="col-12 col-md-9">
-  {% thumbnail post.image "900x520" crop="center" upscale=True as im %}
+  {% thumbnail post.image "980x400" crop="center" upscale=True as im %}
     <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
 {% endthumbnail %}
 </article>

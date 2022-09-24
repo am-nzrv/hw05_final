@@ -25,11 +25,14 @@ SECRET_KEY = 'h89@ps^kc6gp399xw_jr#=rs@zqzq6&(qwxk!jsa+x!waf_n5g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '[::1]',
     'testserver',
+    'www.armennazarov.pythonanywhere.com',
+    'armennazarov.pythonanywhere.com'
 ]
 
 
@@ -46,7 +49,9 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'core.apps.CoreConfig',
     'about.apps.AboutConfig',
-    'sorl.thumbnail'
+    'sorl.thumbnail',
+    'debug_toolbar',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -57,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 ROOT_URLCONF = 'yatube.urls'

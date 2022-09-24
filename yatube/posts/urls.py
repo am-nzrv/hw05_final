@@ -16,5 +16,6 @@ urlpatterns = [
     path('profile/<str:username>/follow/', views.profile_follow,
          name='profile_follow'),
     path('profile/<str:username>/unfollow/', views.profile_unfollow,
-         name='profile_unfollow')
+         name='profile_unfollow'),
+    path('api/v1/posts/<int:post_id>/', views.get_post, name='get_post')
 ]

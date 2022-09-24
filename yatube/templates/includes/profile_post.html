@@ -1,10 +1,11 @@
 {% load thumbnail %}
 <ul>
     <li>Дата публикации: {{ post.pub_date|date:"d E Y" }}</li>
+  {% thumbnail post.image "980x400" crop="center" upscale=True as im %}
+    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+  {% endthumbnail %}
 </ul>
-{% thumbnail post.image "960x389" crop="center" upscale=True as im %}
-  <img class="card-img my-2" src="{{ im.url }}">
-{% endthumbnail %}
+
 <p>{{ post.text }}</p>
 <article>
     <a href="{% url 'posts:post_detail' post.id  %}">Подробная информация</a>

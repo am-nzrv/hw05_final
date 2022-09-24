@@ -1,14 +1,15 @@
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
-
+from .serializers import PostSerializer
 from .forms import CommentForm, PostForm
 from .models import Group, Post, User, Follow
 
 
-#@cache_page(20, key_prefix='index_page')
+@cache_page(20, key_prefix='index_page')
 def index(request):
     """Вьюшка для главной страницы."""
     template = 'posts/index.html'
@@ -160,3 +161,10 @@ def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=user, author=author).delete()
     return redirect('posts:follow_index')
+
+
+def get_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    serializer = PostSerializer(post)
+    response = JsonResponse(data=serializer.data)
+    return response
